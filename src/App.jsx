@@ -457,18 +457,21 @@ const DashboardPage = ({ user }) => {
     if (loading) return <div className="flex items-center justify-center min-h-screen bg-zinc-900">Loading...</div>;
 
     return (
-        <div className="min-h-screen bg-zinc-900 text-zinc-100 font-sans">
+        <div className="min-h-screen bg-zinc-900 text-zinc-100 font-sans flex flex-col">
             {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
             {noteModalData && <NoteModal {...noteModalData} onSave={saveNote} onCancel={() => setNoteModalData(null)} />}
             <Toast {...toast} />
             <Navbar user={user} onLoginClick={() => setShowAuthModal(true)} />
-            <main className="container mx-auto p-4 md:p-8">
+            <main className="container mx-auto p-4 md:p-8 flex-grow">
                 {!user && <div className="p-4 mb-6 text-center text-amber-200 bg-amber-900/30 border border-amber-500/30 rounded-lg">You are in guest mode. <button onClick={() => setShowAuthModal(true)} className="font-bold underline hover:text-white">Sign in or create an account</button> to save your progress.</div>}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <ProgressOverview habits={habits} streakData={streakData} addHabit={addHabit} deleteHabit={deleteHabit} processingState={processingState} />
                     <CalendarGrid habits={habits} allCompletions={allCompletions} currentDate={currentDate} changeMonth={changeMonth} onToggle={toggleCompletion} onOpenNote={(habit, date) => setNoteModalData({ habit, date, completion: allCompletions[habit.id]?.[formatDate(date)] })} processingState={processingState} />
                 </div>
             </main>
+             <footer className="text-center p-4 text-zinc-500 text-sm">
+            Created by Puru
+        </footer>
         </div>
     );
 };
