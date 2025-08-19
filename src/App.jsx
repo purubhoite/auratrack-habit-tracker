@@ -176,42 +176,59 @@ const Toast = ({ message, type, show }) => {
 
 // --- components/AuthModal.jsx ---
 const AuthModal = ({ onClose }) => {
-    // ... (AuthModal component remains unchanged)
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isLogin, setIsLogin] = useState(true);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
         setLoading(true);
         try {
-            if (isLogin) await signInWithEmailAndPassword(auth, email, password);
-            else await createUserWithEmailAndPassword(auth, email, password);
+            if (isLogin) {
+                await signInWithEmailAndPassword(auth, email, password);
+            } else {
+                await createUserWithEmailAndPassword(auth, email, password);
+            }
             onClose();
-        } catch (err) { setError(err.message.replace('Firebase: ', '')); } 
-        finally { setLoading(false); }
+        } catch (err) {
+            // This is the new logic to check for the specific error
+            if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
+                setError("No account found with this email. Please sign up.");
+            } else {
+                setError(err.message.replace('Firebase: ', ''));
+            }
+        } finally {
+            setLoading(false);
+        }
     };
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
             <div className="relative w-full max-w-md p-4 m-4">
                 <SolidCard className="p-8">
-                    <button onClick={onClose} className="absolute top-4 right-4 text-zinc-400 hover:text-white"><CloseIcon /></button>
-                    <h2 className="text-3xl font-bold text-center">AuraTrack</h2>
+                    <button onClick={onClose} className="absolute top-4 right-4 text-zinc-400 hover:text-white transition-colors"><CloseIcon /></button>
+                    <h2 className="text-3xl font-bold text-center text-zinc-100">AuraTrack</h2>
                     <p className="text-center text-zinc-400 mt-2">{isLogin ? "Welcome back! Did you miss your habits, or did they miss you?" : "Let's get you set up."}</p>
                     <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-                        <div className="space-y-4"><input id="email-address" type="email" required className="relative block w-full px-3 py-3 text-zinc-100 placeholder-zinc-500 bg-zinc-900 border border-zinc-700 rounded-md focus:outline-none focus:ring-amber-500 focus:border-amber-500" placeholder="Email address" value={email} onChange={(e) => setEmail(e.target.value)} /><input id="password" type="password" required className="relative block w-full px-3 py-3 text-zinc-100 placeholder-zinc-500 bg-zinc-900 border border-zinc-700 rounded-md focus:outline-none focus:ring-amber-500 focus:border-amber-500" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} /></div>
+                        <div className="space-y-4 rounded-md shadow-sm">
+                            <input id="email-address" name="email" type="email" autoComplete="email" required className="relative block w-full px-3 py-3 text-zinc-100 placeholder-zinc-500 bg-zinc-900 border border-zinc-700 rounded-md appearance-none focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm" placeholder="Email address" value={email} onChange={(e) => setEmail(e.target.value)} />
+                            <input id="password" name="password" type="password" autoComplete="current-password" required className="relative block w-full px-3 py-3 text-zinc-100 placeholder-zinc-500 bg-zinc-900 border border-zinc-700 rounded-md appearance-none focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
+                        </div>
                         {error && <p className="text-sm text-center text-red-400">{error}</p>}
                         <PrimaryButton type="submit" className="w-full" disabled={loading}>{loading ? 'Processing...' : (isLogin ? 'Sign In' : 'Sign Up')}</PrimaryButton>
                     </form>
-                    <p className="mt-6 text-sm text-center text-zinc-400">{isLogin ? "Don't have an account?" : "Already have an account?"}{' '}<button onClick={() => { setIsLogin(!isLogin); setError(''); }} className="font-medium text-amber-400 hover:text-amber-300">{isLogin ? 'Sign up' : 'Sign in'}</button></p>
+                    <p className="mt-6 text-sm text-center text-zinc-400">
+                        {isLogin ? "Don't have an account?" : "Already have an account?"}{' '}
+                        <button onClick={() => { setIsLogin(!isLogin); setError(''); }} className="font-medium text-amber-400 hover:text-amber-300">{isLogin ? 'Sign up' : 'Sign in'}</button>
+                    </p>
                 </SolidCard>
             </div>
         </div>
     );
 };
-
 // --- components/NoteModal.jsx ---
 const NoteModal = ({ habit, date, completion, onSave, onCancel }) => {
     // ... (NoteModal component remains unchanged)
